@@ -1,167 +1,115 @@
-import React, { Component, useState, useEffect } from 'react';
+import React, { Component, useState, useEffect, useRef } from 'react';
 import { useUser } from '../context/user';
+import Navbar from '../components/navbar';
+import addresses from '../contracts/src/addresses';
 
 function BuyTicket() {
   const { state, disconnect } = useUser();
+  const [ticketSupply, setTicketSupply] = useState(0);
+  const [ticketPrice, setTicketPrice] = useState(0);
+  const [isInitialRender, setIsInitialRender] = useState(true);
+  const [num, setNum] = useState(0);
+  useEffect(() => {
+    const getTicketSupply = async () => {
+      const supply = await state.fnft.methods
+        .totalSupply()
+        .call({ from: state.address });
+      setTicketSupply(1000 - supply);
+    };
+    const getTicketPrice = async () => {
+      const price = await state.fnft.methods.PRICE().call({
+        from: state.address,
+      });
+      setTicketPrice(price / 10 ** 18);
+    };
 
-  // const [ticketSupply, setTicketSupply] = useState(0);
+    if (isInitialRender) {
+      setIsInitialRender(false);
+      getTicketSupply();
+      getTicketPrice();
+      console.log(ticketSupply);
+      console.log(ticketPrice);
+    }
+  }, [ticketSupply, isInitialRender, ticketPrice, state, num]);
 
-  // useEffect(() => {
-  //   const userAddress = state.address;
-  //   async function getTicketSupply() {
-  //     const ts = await state.fnft.methods
-  //       .totalSupply()
-  //       .call({ from: userAddress });
-  //     console.log(ts);
-  //     return ts;
-  //   }
-  //   const ticketSupply = getTicketSupply();
-  //   // setTicketSupply(ticketSupply);
-  // }, [state, ticketSupply]);
+  const buyTicket = async () => {
+    await state.ftk.methods
+      .approve(
+        addresses['festivalTokenAddress'],
+        state.web3.utils.toBN(ticketPrice * 5 * 10 ** 18)
+      )
+      .call({ from: state.address });
+    await state.fnft.methods.publicMint(num).call({ from: state.address });
+  };
 
-  // useEffect(() => {
-  //   const getTicketSupply = async () => {
-  //     const ts = await FestivalNFT.methods
-  //       .totalSupply()
-  //       .call({ from: state.address });
-  //     console.log(ts);
-  //     // return Object.values(ts);
-  //   };
-  //   const ts = getTicketSupply();
-  //   // setTicketSupply(ts);
-  // }, [ticketSupply, state]);
+  const handleInputTicket = (event) => {
+    if (Number(event.target.value) > 5 || Number(event.target.value) < 1) {
+      console.log('Invalid input');
+    } else {
+      setNum(Number(event.target.value));
+    }
+  };
 
   return (
-    <div className="h-screen col-span-4 bg-gradient-to-tr from-indigo-800 to-indigo-500 flex items-center">
-      {/* <p>{ticketSupply}</p> */}
+    <div className="">
+      <Navbar />
+      <div className="h-screen col-span-4 bg-gradient-to-tr from-indigo-800 to-indigo-500 flex justify-center">
+        <div className="h-auto flex flex-wrap content-center">
+          <div className="flex justify-center">
+            <div className="block rounded-lg shadow-lg bg-white max-w-sm text-center">
+              <div className="py-3 px-6 text-xl font-bold border-b border-gray-300">
+                Festival Ticket
+              </div>
+              <div className="p-6">
+                <h5 className="text-gray-900 text-xl font-medium mb-2">
+                  Price : {ticketPrice} FTK
+                </h5>
+                <p className="text-gray-700 text-base mb-4">
+                  You can purchase up to 5 FNFT
+                </p>
+                <div className="flex flex-wrap space-x-4">
+                  <button
+                    type="button"
+                    className=" inline-block px-6 py-2.5 bg-blue-600 text-white font-medium text-xs leading-tight uppercase rounded shadow-md hover:bg-blue-700 hover:shadow-lg focus:bg-blue-700 focus:shadow-lg focus:outline-none focus:ring-0 active:bg-blue-800 active:shadow-lg transition duration-150 ease-in-out"
+                    onClick={() => buyTicket()}
+                  >
+                    Purchase
+                  </button>
+                  <div className="inline-block flex justify-center">
+                    <input
+                      type="number"
+                      className="
+                        form-control
+                        block
+                        w-full
+                        px-3
+                        text-base
+                        font-normal
+                        text-gray-700
+                        bg-white bg-clip-padding
+                        border border-solid border-gray-300
+                        rounded
+                        transition
+                        ease-in-out
+                        focus:text-gray-700 focus:bg-white focus:border-blue-600 focus:outline-none
+                      "
+                      id="num"
+                      placeholder="Input 1-5"
+                      onChange={handleInputTicket}
+                      value={num}
+                    />
+                  </div>
+                </div>
+              </div>
+              <div className="py-3 px-6 border-t border-gray-300 text-gray-600">
+                Remaining Supply : {ticketSupply}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
 
 export default BuyTicket;
-
-// let web3;
-
-// class BuyTicket extends Component {
-//   constructor() {
-//     super();
-
-//     this.state = {
-//       festivals: [],
-//     };
-
-//     web3 = new Web3(Provider);
-//   }
-
-//   async componentDidMount() {
-//     await this.updateFestivals();
-//   }
-
-//   updateFestivals = async () => {
-//     try {
-//       const initiator = await web3.eth.accounts[0];
-//       const fnftName = await FestivalNFT.methods
-//         .totalSupply()
-//         .call({ from: initiator });
-//       // const activeFests = await festivalFactory.methods
-//       //   .getActiveFests()
-//       //   .call({ from: initiator });
-//       // const fests = await Promise.all(
-//       //   activeFests.map(async (fest) => {
-//       //     const festDetails = await festivalFactory.methods
-//       //       .getFestDetails(fest)
-//       //       .call({ from: initiator });
-//       //     const [festName, festSymbol, ticketPrice, totalSupply, marketplace] =
-//       //       Object.values(festDetails);
-//       //     const nftInstance = await FestivalNFT(fest);
-//       //     const saleId = await nftInstance.methods
-//       //       .getNextSaleTicketId()
-//       //       .call({ from: initiator });
-
-//       return (
-//         // <tr key={fest}>
-//         //   <td class="center">{fnftName}</td>
-//           {/* <td class="center">{web3.utils.fromWei(ticketPrice, 'ether')}</td>
-//               <td class="center">{totalSupply - saleId}</td>
-
-//               <td class="center">
-//                 <button
-//                   type="submit"
-//                   className="custom-btn login-btn"
-//                   onClick={this.onPurchaseTicket.bind(
-//                     this,
-//                     marketplace,
-//                     ticketPrice,
-//                     initiator
-//                   )}
-//                 >
-//                   Buy
-//                 </button>
-//               </td> */}
-//         // </tr>
-//       );
-
-//       // this.setState({ festivals: fests });
-//     } catch (err) {
-//       // renderNotification('danger', 'Error', err.message);
-//       console.log('Error while updating the fetivals', err);
-//     }
-//   };
-
-//   onPurchaseTicket = async (marketplace, ticketPrice, initiator) => {
-//     try {
-//       const marketplaceInstance = await FestivalMarketplace(marketplace);
-//       await festToken.methods
-//         .approve(marketplace, ticketPrice)
-//         .send({ from: initiator, gas: 6700000 });
-//       await marketplaceInstance.methods
-//         .purchaseTicket()
-//         .send({ from: initiator, gas: 6700000 });
-//       await this.updateFestivals();
-
-//       renderNotification(
-//         'success',
-//         'Success',
-//         `Ticket for the Festival purchased successfully!`
-//       );
-//     } catch (err) {
-//       console.log('Error while creating new festival', err);
-//       renderNotification('danger', 'Error', err.message);
-//     }
-//   };
-
-//   inputChangedHandler = (e) => {
-//     const state = this.state;
-//     state[e.target.name] = e.target.value;
-//     this.setState(state);
-//   };
-
-//   render() {
-//     return (
-//       <div class="container col s12 m6 offset-m3 l4 offset-l4 z-depth-6 card-panel">
-//         <h4 class="center">Purchase Tickets</h4>
-//         <table id="requests" class="responsive-table striped">
-//           <thead>
-//             <tr>
-//               <th key="name" class="center">
-//                 Name
-//               </th>
-//               <th key="price" class="center">
-//                 Price(in FEST)
-//               </th>
-//               <th key="left" class="center">
-//                 Tickets Left
-//               </th>
-//               <th key="purchase" class="center">
-//                 Purchase
-//               </th>
-//             </tr>
-//           </thead>
-//           <tbody class="striped highlight">{this.state.festivals}</tbody>
-//         </table>
-//       </div>
-//     );
-//   }
-// }
-
-// export default BuyTicket;

@@ -1,19 +1,15 @@
 import Link from 'next/link';
-import React, { useEffect } from 'react';
+import React from 'react';
 // Importing modules
 import { useUser } from '../context/user';
-// import { useWeb3 } from '@openzeppelin/network/react';
-// import Web3Data from '../components/Web3Data';
+import Navbar from '../components/navbar';
 function App() {
-  // const web3Context = useWeb3(
-  //   `wss://rinkeby.infura.io/ws/v3/${process.env.REACT_APP_INFURA_PROJECT_ID}`
-  // );
-
-  const { state, connect, disconnect } = useUser();
+  const { state, connect } = useUser();
 
   return (
     <div className="App">
       <div className="App-header">
+        <Navbar></Navbar>
         <div className="h-screen col-span-4 bg-gradient-to-tr from-indigo-800 to-indigo-500 flex items-center">
           <div className="ml-20 w-1/2">
             <h2 className="text-white text-4xl">Blockchain Festival</h2>
@@ -34,7 +30,6 @@ function App() {
                 <p>Connect Wallet</p>
               </button>
             )}
-            {/* <Web3Data title="Web3 Data" web3Context={web3Context}></Web3Data> */}
           </div>
         </div>
       </div>
