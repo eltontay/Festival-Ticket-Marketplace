@@ -5,6 +5,7 @@ import addresses from '../contracts/src/addresses';
 
 function BuyTicket() {
   const { state, disconnect } = useUser();
+  const [allowance, checkAllowance] = useState(false);
   const [ticketSupply, setTicketSupply] = useState(0);
   const [ticketPrice, setTicketPrice] = useState(0);
   const [isInitialRender, setIsInitialRender] = useState(true);
@@ -30,16 +31,36 @@ function BuyTicket() {
       console.log(ticketSupply);
       console.log(ticketPrice);
     }
-  }, [ticketSupply, isInitialRender, ticketPrice, state, num]);
+  }, [ticketSupply, isInitialRender, ticketPrice, state, num, allowance]);
 
   const buyTicket = async () => {
-    await state.ftk.methods
-      .approve(
-        addresses['festivalTokenAddress'],
-        state.web3.utils.toBN(ticketPrice * 5 * 10 ** 18)
-      )
-      .call({ from: state.address });
-    await state.fnft.methods.publicMint(num).call({ from: state.address });
+    await state.fnft.methods
+      .publicMint(num)
+      .send({ from: state.address })
+      .then(function (result) {
+        console.log(result);
+      });
+  };
+
+  const approveTicketPurchase = async () => {
+    const allowance = await state.ftk.methods.allowance(
+      state.address,
+      addresses['festivalNFTAddress']
+    );
+    if (allowance > 0) {
+      console.log('you have sufficient allowance');
+    } else {
+      await state.ftk.methods
+        .approve(
+          addresses['festivalNFTAddress'],
+          state.web3.utils.toBN(ticketPrice * 5 * 1e18)
+        )
+        .send({ from: state.address })
+        .then(function (result) {
+          console.log(result);
+        });
+    }
+    checkAllowance(true);
   };
 
   const handleInputTicket = (event) => {
@@ -68,13 +89,24 @@ function BuyTicket() {
                   You can purchase up to 5 FNFT
                 </p>
                 <div className="flex flex-wrap space-x-4">
-                  <button
-                    type="button"
-                    className=" inline-block px-6 py-2.5 bg-blue-600 text-white font-medium text-xs leading-tight uppercase rounded shadow-md hover:bg-blue-700 hover:shadow-lg focus:bg-blue-700 focus:shadow-lg focus:outline-none focus:ring-0 active:bg-blue-800 active:shadow-lg transition duration-150 ease-in-out"
-                    onClick={() => buyTicket()}
-                  >
-                    Purchase
-                  </button>
+                  {allowance ? (
+                    <button
+                      type="button"
+                      className=" inline-block px-6 py-2.5 bg-blue-600 text-white font-medium text-xs leading-tight uppercase rounded shadow-md hover:bg-blue-700 hover:shadow-lg focus:bg-blue-700 focus:shadow-lg focus:outline-none focus:ring-0 active:bg-blue-800 active:shadow-lg transition duration-150 ease-in-out"
+                      onClick={() => buyTicket()}
+                    >
+                      Purchase
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      className=" inline-block px-6 py-2.5 bg-blue-600 text-white font-medium text-xs leading-tight uppercase rounded shadow-md hover:bg-blue-700 hover:shadow-lg focus:bg-blue-700 focus:shadow-lg focus:outline-none focus:ring-0 active:bg-blue-800 active:shadow-lg transition duration-150 ease-in-out"
+                      onClick={() => approveTicketPurchase()}
+                    >
+                      Approve
+                    </button>
+                  )}
+
                   <div className="inline-block flex justify-center">
                     <input
                       type="number"

@@ -11,8 +11,6 @@ function Profile() {
       const owner = await state.fnft.methods.owner().call({
         from: state.address,
       });
-      console.log(state.address);
-      console.log(owner);
       if (`${state.address}`.toLowerCase() === `${owner}`.toLowerCase()) {
         setOwner(true);
       }
