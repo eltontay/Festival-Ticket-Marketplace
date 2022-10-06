@@ -57,6 +57,7 @@ const Provider = ({ children }) => {
           .call({
             from: accounts[0],
           });
+
         setState({
           address: accounts[0],
           ftkBalance: ftkBalance / 10 ** 18,

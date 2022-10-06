@@ -6,6 +6,18 @@ function Profile() {
   const { state } = useUser();
   const [isInitialRender, setIsInitialRender] = useState(true);
   const [owner, setOwner] = useState(false);
+  const testData = [
+    {
+      id: 1,
+      onSale: 'Yes',
+      sellingPrice: 100,
+    },
+    {
+      id: 2,
+      onSale: 'No',
+      sellingPrice: 1000,
+    },
+  ];
   useEffect(() => {
     const isOwner = async () => {
       const owner = await state.fnft.methods.owner().call({
@@ -15,6 +27,7 @@ function Profile() {
         setOwner(true);
       }
     };
+
     if (isInitialRender) {
       isOwner();
     }
@@ -37,17 +50,42 @@ function Profile() {
       <div className="h-screen col-span-4 bg-gradient-to-tr from-indigo-800 to-indigo-500 flex justify-center">
         <div className="h-auto flex flex-wrap content-center">
           <div className="flex justify-center p-8">
-            <div className="block rounded-lg shadow-lg bg-white max-w-sm text-center">
-              <div className="py-3 px-6 text-xl font-bold border-b border-gray-300">
+            <div className="block rounded-lg shadow-lg bg-white max-w-sm ">
+              <div className="py-3 px-6 text-xl font-bold border-b border-gray-300 text-center">
                 Inventory
               </div>
-              <div className="p-6">
+              <div className="p-6 border-b">
                 <h5 className="text-gray-900 text-xl font-medium mb-2">
                   {state.ftkBalance} FTK
                 </h5>
                 <h5 className="text-gray-900 text-xl font-medium mb-2">
                   {state.fnftBalance} FNFT
                 </h5>
+              </div>
+              <div className="py-3 px-6 text-xl font-bold border-b border-gray-300 text-center">
+                FNFT Details
+              </div>
+              <div className="p-6">
+                <table className="table-auto border-separate border-spacing-2 ">
+                  <thead>
+                    <tr>
+                      <th>ID</th>
+                      <th>Sale</th>
+                      <th>Selling Price</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {testData.map((obj) => {
+                      return (
+                        <tr key={obj}>
+                          <td>{obj['id']}</td>
+                          <td>{obj['onSale']}</td>
+                          <td>{obj['sellingPrice']}</td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
               </div>
             </div>
           </div>
