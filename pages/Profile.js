@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
+import { useTable } from 'react-table';
 import Navbar from '../components/navbar';
 import { useUser } from '../context/user';
 
@@ -6,19 +7,54 @@ function Profile() {
   const { state } = useUser();
   const [isInitialRender, setIsInitialRender] = useState(true);
   const [owner, setOwner] = useState(false);
-  const testData = [
-    {
-      id: 1,
-      onSale: 'Yes',
-      sellingPrice: 100,
-    },
-    {
-      id: 2,
-      onSale: 'No',
-      sellingPrice: 1000,
-    },
-  ];
+  const [tickets, setTickets] = useState([]);
+  const [listForm, setListForm] = useState(false);
+  const [sellingPrice, setSellingPrice] = useState(0);
+  const [currentSellingPrice, setCurrentSellingPrice] = useState(0);
+  const [ticketId, setTicketId] = useState(0);
+  const [approval, setApproval] = useState(false);
   useEffect(() => {
+    const ticketUpdate = async () => {
+      var s;
+      await state.fnft.methods
+        .totalSupply()
+        .call({ from: state.address })
+        .then((response) => {
+          s = response;
+        });
+      var array = [];
+      console.log('supply', s);
+      for (var i = 1; i <= s; i++) {
+        const owner = await state.fnft.methods.ownerOf(i).call({
+          from: state.address,
+        });
+        console.log(owner);
+        if (`${state.address}`.toLowerCase() === `${owner}`.toLowerCase()) {
+          const sale = await state.fnft.methods.getForSale(i).call({
+            from: state.address,
+          });
+          var onSale;
+          if (sale) {
+            onSale = 'Yes';
+          } else {
+            onSale = 'No';
+          }
+          var selling;
+          await state.fnft.methods
+            .getSellingPrice(i)
+            .call({
+              from: state.address,
+            })
+            .then((response) => {
+              selling = response;
+              console.log(selling);
+            });
+          array.push({ id: i, sale: onSale, sellingPrice: selling });
+        }
+      }
+      setTickets(array);
+    };
+
     const isOwner = async () => {
       const owner = await state.fnft.methods.owner().call({
         from: state.address,
@@ -29,9 +65,57 @@ function Profile() {
     };
 
     if (isInitialRender) {
+      setIsInitialRender(false);
+      ticketUpdate();
       isOwner();
+      console.log('tickets', tickets);
     }
-  }, [owner, isInitialRender, state]);
+  }, [owner, isInitialRender, state, tickets]);
+
+  const open = async (id, cSellingPrice) => {
+    setListForm(true);
+    setTicketId(id);
+    setCurrentSellingPrice(cSellingPrice);
+    // await state.fnft.methods.
+  };
+
+  const close = async () => {
+    setListForm(false);
+    setSellingPrice(0);
+    setTicketId(0);
+  };
+
+  const listTicket = async () => {
+    await state.fnft.methods
+      .setListing(ticketId, currentSellingPrice)
+      .send({
+        from: state.address,
+      })
+      .then(function (result) {
+        console.log(result);
+      });
+  };
+
+  const approveTicketListing = async () => {
+    const approved = await state.ftk.methods.getApproved(ticketId).call({
+      from: state.address,
+    });
+    console.log(approved);
+    // if (allowance > 0) {
+    //   console.log('you have sufficient allowance');
+    // } else {
+    //   await state.ftk.methods
+    //     .approve(
+    //       addresses['festivalNFTAddress'],
+    //       state.web3.utils.toBN(ticketPrice * 5 * 1e18)
+    //     )
+    //     .send({ from: state.address })
+    //     .then(function (result) {
+    //       console.log(result);
+    //     });
+    // }
+    // checkAllowance(true);
+  };
 
   const startPublicSale = async () => {
     await state.fnft.methods
@@ -43,6 +127,41 @@ function Profile() {
         console.log(receipt);
       });
   };
+
+  const handleInputTicket = (event) => {
+    if (
+      Number(event.target.value) >= currentSellingPrice * 1.1 ||
+      Number(event.target.value) <= 1
+    ) {
+      console.log('Invalid input');
+    } else {
+      setCurrentSellingPrice(Number(event.target.value));
+    }
+  };
+
+  const data = useMemo(() => tickets, [tickets]);
+
+  // Define column of the table
+  const columns = useMemo(
+    () => [
+      {
+        Header: 'ID',
+        accessor: 'id',
+      },
+      {
+        Header: 'Sale',
+        accessor: 'sale',
+      },
+      {
+        Header: 'Selling Price',
+        accessor: 'selling_price',
+      },
+    ],
+    []
+  );
+
+  const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow } =
+    useTable({ columns, data });
 
   return (
     <div className="">
@@ -66,26 +185,88 @@ function Profile() {
                 FNFT Details
               </div>
               <div className="p-6">
-                <table className="table-auto border-separate border-spacing-2 ">
+                <table
+                  {...getTableProps()}
+                  className="table-auto border-separate border-spacing-4 "
+                >
                   <thead>
-                    <tr>
-                      <th>ID</th>
-                      <th>Sale</th>
-                      <th>Selling Price</th>
-                    </tr>
+                    {
+                      // Loop over the header rows
+                      headerGroups.map((headerGroup) => (
+                        // Apply the header row props
+                        <tr {...headerGroup.getHeaderGroupProps()}>
+                          {
+                            // Loop over the headers in each row
+                            headerGroup.headers.map((column) => (
+                              // Apply the header cell props
+                              <th {...column.getHeaderProps()}>
+                                {
+                                  // Render the header
+                                  column.render('Header')
+                                }
+                              </th>
+                            ))
+                          }
+                        </tr>
+                      ))
+                    }
                   </thead>
                   <tbody>
-                    {testData.map((obj) => {
+                    {tickets.map((obj) => {
                       return (
                         <tr key={obj}>
                           <td>{obj['id']}</td>
-                          <td>{obj['onSale']}</td>
+                          <td>
+                            {obj['sale'] == 'No' ? (
+                              <button
+                                className="uppercase border-light-blue border-2 inline-block text-sm bg-grey px-4 p-2 rounded-full font-semibold hover:bg-indigo-100"
+                                onClick={() =>
+                                  open(obj['id'], obj['sellingPrice'])
+                                }
+                              ></button>
+                            ) : (
+                              <button className="uppercase border-light-blue border-2 inline-block text-sm bg-grey px-4 p-2 rounded-full font-semibold hover:bg-indigo-100">
+                                Change Listing
+                              </button>
+                            )}
+                          </td>
                           <td>{obj['sellingPrice']}</td>
                         </tr>
                       );
                     })}
                   </tbody>
                 </table>
+                {listForm ? (
+                  <form className="w-full max-w-sm">
+                    <div className="flex items-center border-b border-teal-500 py-2">
+                      <input
+                        className="appearance-none bg-transparent border-none w-full text-gray-700 mr-3 py-1 px-2 leading-tight focus:outline-none"
+                        type="number"
+                        required
+                        placeholder="Price in FTK"
+                      />
+
+                      <button
+                        className="flex-shrink-0 bg-teal-500 hover:bg-teal-700 border-teal-500 hover:border-teal-700 text-sm border-4 text-white py-1 px-2 rounded"
+                        type="button"
+                        onChange={handleInputTicket}
+                        value={sellingPrice}
+                        onClick={() => approveTicketListing()}
+                      >
+                        Approve Ticket
+                      </button>
+                      <button
+                        className="flex-shrink-0 border-transparent border-4 text-teal-500 hover:text-teal-800 text-sm py-1 px-2 rounded"
+                        type="button"
+                        onClick={() => close()}
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </form>
+                ) : (
+                  <div></div>
+                )}
               </div>
             </div>
           </div>

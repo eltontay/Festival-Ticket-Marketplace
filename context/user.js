@@ -4,7 +4,6 @@ import festivalToken from '../contracts/src/abis/FestivalToken.json';
 import addresses from '../contracts/src/addresses';
 import Web3 from 'web3';
 const Context = createContext();
-const url = process.env.NEXT_PUBLIC_INFURA_URL;
 const Provider = ({ children }) => {
   const user = {
     address: '',
@@ -28,7 +27,6 @@ const Provider = ({ children }) => {
   }, [state]);
 
   async function connect() {
-    //
     const { ethereum } = window;
 
     if (ethereum) {
@@ -37,8 +35,7 @@ const Provider = ({ children }) => {
         const accounts = await ethereum.request({
           method: 'eth_requestAccounts',
         });
-        // var web3 = new Web3(new Web3.providers.HttpProvider(url));
-        const web3 = new Web3(ethereum);
+        var web3 = new Web3(ethereum);
         var festivalNFTContract = new web3.eth.Contract(
           festivalNFT,
           addresses['festivalNFTAddress']
@@ -57,7 +54,6 @@ const Provider = ({ children }) => {
           .call({
             from: accounts[0],
           });
-
         setState({
           address: accounts[0],
           ftkBalance: ftkBalance / 10 ** 18,

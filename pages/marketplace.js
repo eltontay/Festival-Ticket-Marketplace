@@ -82,9 +82,7 @@ function Marketplace() {
                   </a>
                 </h3>
               </div>
-              <p className="text-sm font-medium text-black">
-                {ticketsSale.current[1]}
-              </p>
+              <p className="text-sm font-medium text-black"></p>
             </div>
           </div>
         </div>
