@@ -190,26 +190,15 @@ function Profile() {
                   className="table-auto border-separate border-spacing-4 "
                 >
                   <thead>
-                    {
-                      // Loop over the header rows
-                      headerGroups.map((headerGroup) => (
-                        // Apply the header row props
-                        <tr {...headerGroup.getHeaderGroupProps()}>
-                          {
-                            // Loop over the headers in each row
-                            headerGroup.headers.map((column) => (
-                              // Apply the header cell props
-                              <th {...column.getHeaderProps()}>
-                                {
-                                  // Render the header
-                                  column.render('Header')
-                                }
-                              </th>
-                            ))
-                          }
-                        </tr>
-                      ))
-                    }
+                    {headerGroups.map((headerGroup) => (
+                      <tr {...headerGroup.getHeaderGroupProps()}>
+                        {headerGroup.headers.map((column) => (
+                          <th {...column.getHeaderProps()}>
+                            {column.render('Header')}
+                          </th>
+                        ))}
+                      </tr>
+                    ))}
                   </thead>
                   <tbody>
                     {tickets.map((obj) => {
