@@ -9,12 +9,19 @@ function Profile() {
   const [owner, setOwner] = useState(false);
   const [tickets, setTickets] = useState([]);
   const [listForm, setListForm] = useState(false);
+  const [adjustForm, setAdjustForm] = useState(false);
   const [listId, setListId] = useState(0);
   const [sellingPrice, setSellingPrice] = useState(0);
   const [currentSellingPrice, setCurrentSellingPrice] = useState(0);
   useEffect(() => {
     const setList = async (arr) => {
       setListForm(true);
+      setListId(arr[0]);
+      setSellingPrice(arr[2]);
+    };
+
+    const adjustList = async (arr) => {
+      setAdjustForm(true);
       setListId(arr[0]);
       setSellingPrice(arr[2]);
     };
@@ -75,8 +82,12 @@ function Profile() {
                   <td>
                     {checkApproved ? (
                       sale ? (
-                        <button className="w-full uppercase border-light-blue border-2 inline-block text-sm bg-grey px-4 p-2 rounded-full font-semibold hover:bg-indigo-100">
-                          Change Listing
+                        <button
+                          className="w-full uppercase border-light-blue border-2 inline-block text-sm bg-grey px-4 p-2 rounded-full font-semibold hover:bg-indigo-100"
+                          value={[i, selling]}
+                          onClick={(e) => adjustList(e.target.value)}
+                        >
+                          Adjust Listing
                         </button>
                       ) : (
                         <button
@@ -126,8 +137,32 @@ function Profile() {
   }, [owner, isInitialRender, state, tickets, sellingPrice]);
 
   const listTicket = async () => {
-    await state.fnft.methods
+    const sprice = await state.fnft.methods
       .setListing(listId, currentSellingPrice)
+      .send({
+        from: state.address,
+      })
+      .then(function (result) {
+        console.log(result);
+      });
+    setSellingPrice(sprice);
+  };
+
+  const updatePrice = async () => {
+    const sprice = await state.fnft.methods
+      .adjustListing(listId, currentSellingPrice)
+      .send({
+        from: state.address,
+      })
+      .then(function (result) {
+        console.log(result);
+      });
+    setSellingPrice(sprice);
+  };
+
+  const delist = async () => {
+    await state.fnft.methods
+      .removeListing(listId)
       .send({
         from: state.address,
       })
@@ -148,6 +183,25 @@ function Profile() {
   };
 
   const handleInputTicket = (event) => {
+    if (sellingPrice == 0) {
+      if (Number(event.target.value) > 11 || Number(event.target.value) <= 0) {
+        console.log('Invalid Input');
+      } else {
+        setCurrentSellingPrice(Number(event.target.value));
+      }
+    } else {
+      if (
+        Number(event.target.value) >= sellingPrice * 1.1 ||
+        Number(event.target.value) <= 1
+      ) {
+        console.log('Invalid Input');
+      } else {
+        setCurrentSellingPrice(Number(event.target.value));
+      }
+    }
+  };
+
+  const handleAdjustTicket = (event) => {
     if (sellingPrice == 0) {
       if (Number(event.target.value) > 11 || Number(event.target.value) <= 0) {
         console.log('Invalid Input');
@@ -220,6 +274,44 @@ function Profile() {
                         className="flex-shrink-0 border-transparent border-4 text-teal-500 hover:text-teal-800 text-sm py-1 px-2 rounded"
                         type="button"
                         onClick={() => setListForm(false)}
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </form>
+                ) : (
+                  <div></div>
+                )}
+                {adjustForm ? (
+                  <form className="w-full max-w-sm">
+                    <div className="flex items-center border-b border-teal-500 py-2">
+                      <input
+                        className="appearance-none bg-transparent border-none w-full text-gray-700 mr-3 py-1 px-2 leading-tight focus:outline-none"
+                        type="number"
+                        required
+                        placeholder="Price in FTK"
+                        value={currentSellingPrice}
+                        onChange={handleAdjustTicket}
+                      />
+
+                      <button
+                        className="flex-shrink-0 bg-teal-500 hover:bg-teal-700 border-teal-500 hover:border-teal-700 text-sm border-4 text-white py-1 px-2 rounded"
+                        type="button"
+                        onClick={() => updatePrice()}
+                      >
+                        Adjust Price
+                      </button>
+                      <button
+                        className="flex-shrink-0 bg-red-500 hover:bg-red-700 border-red-500 hover:border-red-700 text-sm border-4 text-white py-1 px-2 rounded"
+                        type="button"
+                        onClick={() => delist()}
+                      >
+                        Delist
+                      </button>
+                      <button
+                        className="flex-shrink-0 border-transparent border-4 text-teal-500 hover:text-teal-800 text-sm py-1 px-2 rounded"
+                        type="button"
+                        onClick={() => setAdjustForm(false)}
                       >
                         Cancel
                       </button>
