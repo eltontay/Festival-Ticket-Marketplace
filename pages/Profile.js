@@ -9,11 +9,26 @@ function Profile() {
   const [owner, setOwner] = useState(false);
   const [tickets, setTickets] = useState([]);
   const [listForm, setListForm] = useState(false);
+  const [listId, setListId] = useState(0);
   const [sellingPrice, setSellingPrice] = useState(0);
   const [currentSellingPrice, setCurrentSellingPrice] = useState(0);
-  const [ticketId, setTicketId] = useState(0);
-  const [approval, setApproval] = useState(false);
   useEffect(() => {
+    const setList = async (arr) => {
+      setListForm(true);
+      setListId(arr[0]);
+      setSellingPrice(arr[2]);
+    };
+
+    const approveTicket = async (id) => {
+      await state.fnft.methods
+        .approve(addresses['festivalNFTAddress'], id)
+        .send({
+          from: state.address,
+        })
+        .on('receipt', function (receipt) {
+          console.log(receipt);
+        });
+    };
     const ticketUpdate = async () => {
       try {
         var s;
@@ -60,17 +75,21 @@ function Profile() {
                   <td>
                     {checkApproved ? (
                       sale ? (
-                        <button className="uppercase border-light-blue border-2 inline-block text-sm bg-grey px-4 p-2 rounded-full font-semibold hover:bg-indigo-100">
+                        <button className="w-full uppercase border-light-blue border-2 inline-block text-sm bg-grey px-4 p-2 rounded-full font-semibold hover:bg-indigo-100">
                           Change Listing
                         </button>
                       ) : (
-                        <button className="uppercase border-light-blue border-2 inline-block text-sm bg-grey px-4 p-2 rounded-full font-semibold hover:bg-indigo-100">
+                        <button
+                          className="w-full uppercase border-light-blue border-2 inline-block text-sm bg-grey px-4 p-2 rounded-full font-semibold hover:bg-indigo-100"
+                          value={[i, selling]}
+                          onClick={(e) => setList(e.target.value)}
+                        >
                           List
                         </button>
                       )
                     ) : (
                       <button
-                        className="uppercase border-light-blue border-2 inline-block text-sm bg-grey px-4 p-2 rounded-full font-semibold hover:bg-indigo-100"
+                        className="w-full uppercase border-light-blue border-2 inline-block text-sm bg-grey px-4 p-2 rounded-full font-semibold hover:bg-indigo-100"
                         value={i}
                         onClick={(e) => approveTicket(e.target.value)}
                       >
@@ -103,23 +122,12 @@ function Profile() {
       setIsInitialRender(false);
       ticketUpdate();
       isOwner();
-      console.log('tickets', tickets);
     }
-  }, [owner, isInitialRender, state, tickets]);
-
-  const open = async () => {
-    setListForm(true);
-  };
-
-  const close = async () => {
-    setListForm(false);
-    setSellingPrice(0);
-    setTicketId(0);
-  };
+  }, [owner, isInitialRender, state, tickets, sellingPrice]);
 
   const listTicket = async () => {
     await state.fnft.methods
-      .setListing(ticketId, currentSellingPrice)
+      .setListing(listId, currentSellingPrice)
       .send({
         from: state.address,
       })
@@ -139,28 +147,24 @@ function Profile() {
       });
   };
 
-  const approveTicket = async (id) => {
-    await state.fnft.methods
-      .approve(addresses['festivalNFTAddress'], id)
-      .send({
-        from: state.address,
-      })
-      .on('receipt', function (receipt) {
-        console.log(receipt);
-      });
-  };
-
   const handleInputTicket = (event) => {
-    if (
-      Number(event.target.value) >= currentSellingPrice * 1.1 ||
-      Number(event.target.value) <= 1
-    ) {
-      console.log('Invalid input');
+    if (sellingPrice == 0) {
+      if (Number(event.target.value) > 11 || Number(event.target.value) <= 0) {
+        console.log('Invalid Input');
+      } else {
+        setCurrentSellingPrice(Number(event.target.value));
+      }
     } else {
-      setCurrentSellingPrice(Number(event.target.value));
+      if (
+        Number(event.target.value) >= sellingPrice * 1.1 ||
+        Number(event.target.value) <= 1
+      ) {
+        console.log('Invalid Input');
+      } else {
+        setCurrentSellingPrice(Number(event.target.value));
+      }
     }
   };
-
   return (
     <div className="">
       <Navbar />
@@ -192,30 +196,6 @@ function Profile() {
                     </tr>
                   </thead>
                   <tbody>{tickets}</tbody>
-                  {/* <tbody>
-                    {tickets.map((obj) => {
-                      return (
-                        <tr key={obj}>
-                          <td>{obj['id']}</td>
-                          <td>
-                            {obj['sale'] == 'No' ? (
-                              <button
-                                className="uppercase border-light-blue border-2 inline-block text-sm bg-grey px-4 p-2 rounded-full font-semibold hover:bg-indigo-100"
-                                onClick={() =>
-                                  open(obj['id'], obj['sellingPrice'])
-                                }
-                              ></button>
-                            ) : (
-                              <button className="uppercase border-light-blue border-2 inline-block text-sm bg-grey px-4 p-2 rounded-full font-semibold hover:bg-indigo-100">
-                                Change Listing
-                              </button>
-                            )}
-                          </td>
-                          <td>{obj['sellingPrice']}</td>
-                        </tr>
-                      );
-                    })}
-                  </tbody> */}
                 </table>
                 {listForm ? (
                   <form className="w-full max-w-sm">
@@ -225,21 +205,21 @@ function Profile() {
                         type="number"
                         required
                         placeholder="Price in FTK"
+                        value={currentSellingPrice}
+                        onChange={handleInputTicket}
                       />
 
                       <button
                         className="flex-shrink-0 bg-teal-500 hover:bg-teal-700 border-teal-500 hover:border-teal-700 text-sm border-4 text-white py-1 px-2 rounded"
                         type="button"
-                        onChange={handleInputTicket}
-                        value={sellingPrice}
-                        onClick={() => approveTicketListing()}
+                        onClick={() => listTicket()}
                       >
-                        Approve Ticket
+                        List Ticket
                       </button>
                       <button
                         className="flex-shrink-0 border-transparent border-4 text-teal-500 hover:text-teal-800 text-sm py-1 px-2 rounded"
                         type="button"
-                        onClick={() => close()}
+                        onClick={() => setListForm(false)}
                       >
                         Cancel
                       </button>
