@@ -1,0 +1,9 @@
+version: '3.9'
+services:
+  festival-ticket-marketplace:
+    build:
+      context: './'
+    networks:
+      - dev
+    ports:
+      - '3000:3000'
