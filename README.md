@@ -1,34 +1,63 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Blockchain Festival (Frontend)
 
-## Getting Started
-
-First, run the development server:
+## View Smart Contracts here
 
 ```bash
-npm run dev
-# or
-yarn dev
+https://github.com/eltontay/Festival-Smart-Contracts
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Overview
 
-You can start editing the page by modifying `pages/index.js`. The page auto-updates as you edit the file.
+> Blockchain Festival is a web-based platform powered by Settlemint for buying and reselling of festival tickets using blockchain technology. By utilising blockchain technology, numerous issues can be eliminated : Scalping , Security and Data Collection. This platform is built on the public Ethereum blockchain with 2 smart contracts utilising the latest standards, where _"FestivalNFT"_ follows the ERC721 standard and _"FestivalToken"_ follows the ERC20 standard.
 
-[API routes](https://nextjs.org/docs/api-routes/introduction) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.js`.
+### Issues tackled
 
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/api-routes/introduction) instead of React pages.
+1. **Scalping**
 
-## Learn More
+   > Scalpers, an unwanted byproduct of the free market exists typically by buying in bulk and reselling them for ridiculous prices higher than the initial retail price. Despite morality reasons, scalpers are not illegalised in Singapore. This is because margins are determined by willing buyers and willing sellers. However, this is an issue which can damage the reputation of the organiser, as it prevents genuine customers from purchasing tickets. That is why, Blockchain Festival has enforced predefined rules in the smart contracts, which limits the amount of tickets a buyer can purchase, and the price the buyer can resell at. In this example, the limitation of resell price is capped at 110% from the previous price.
 
-To learn more about Next.js, take a look at the following resources:
+2. **Security**
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+   > Authenticity is an issue when you unknowingly purchased fake tickets. This can happen through phishing sites or through dubious resellers. Using blockchain technology, each ticket has its own unique identity which is transparent for all users to see, allowing easy verification of authenticity not just for the organiser, but for the public as well. Blockchain Festival verifies these transactions in the smart contracts listed on the blockchain.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+3. **Data Collection**
 
-## Deploy on Vercel
+   > Data collection is an important aspect for organisers to better understand their target audience to ensure a successful launch of their festival. With blockchain technology, every transaction is tracked and monitored. This gives not just ownership of data to the organiser but also detailed insights. With these insights, organisers will be able to analyse the data and use them to achieve more successful campaigns.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+#
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+## Technical Details
+
+The frontend application is built using nextjs, web3js, metamask, styled with tailwindcss.
+
+### Smart Contracts
+
+There are 4 main pages listed under the `./pages` directory.
+
+- **index**
+  - Landing Page with a short introduction , navbar, connecting wallet with metamask, and a button that directs to `./buyticket`
+- **BuyTicket**
+  - Purchasing page that allows users to purchase ERC721 Festival Ticket (FNFT) using ERC20 FTK Tokens at a price of 10 FTK, limited by 5 purchases
+- **Marketplace**
+  - Marketplace Page that is a secondary Marketplace that faciliates resales of ERC721 Festival Tickets (FNFT)
+- **Profile**
+  - Profile Page that showcases the account balances as well as owner functionalities
+
+#
+
+## Deployment
+
+```bash
+
+```
+
+#
+
+![Alt text](./public/landing.png 'Landing Page')
+![Alt text](./public/connect.png 'Connect with MetaMask')
+![Alt text](./public/buyticket1.png 'Purchase Festival Ticket')
+![Alt text](./public/profile.png 'Profile Page')
+![Alt text](./public/list.png 'Listing Ticket')
+![Alt text](./public/listtransaction.png 'Listing Sucessful with Metamask')
+![Alt text](./public/marketplace.png 'Marketplace Page')
+![Alt text](./public/purchasemarketplace.png 'Purchasing Ticket from Marketplace')
