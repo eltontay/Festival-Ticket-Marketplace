@@ -1,7 +1,7 @@
-import React, { useEffect, useState, useMemo } from 'react';
-import { useTable } from 'react-table';
+import React, { useEffect, useState } from 'react';
 import Navbar from '../components/navbar';
 import { useUser } from '../context/user';
+import addresses from '../contracts/src/addresses';
 
 function Profile() {
   const { state } = useUser();
@@ -15,44 +15,79 @@ function Profile() {
   const [approval, setApproval] = useState(false);
   useEffect(() => {
     const ticketUpdate = async () => {
-      var s;
-      await state.fnft.methods
-        .totalSupply()
-        .call({ from: state.address })
-        .then((response) => {
-          s = response;
-        });
-      var array = [];
-      console.log('supply', s);
-      for (var i = 1; i <= s; i++) {
-        const owner = await state.fnft.methods.ownerOf(i).call({
-          from: state.address,
-        });
-        console.log(owner);
-        if (`${state.address}`.toLowerCase() === `${owner}`.toLowerCase()) {
-          const sale = await state.fnft.methods.getForSale(i).call({
+      try {
+        var s;
+        await state.fnft.methods
+          .totalSupply()
+          .call({ from: state.address })
+          .then((response) => {
+            s = response;
+          });
+        var array = [];
+        for (var i = 1; i <= s; i++) {
+          const owner = await state.fnft.methods.ownerOf(i).call({
             from: state.address,
           });
-          var onSale;
-          if (sale) {
-            onSale = 'Yes';
-          } else {
-            onSale = 'No';
-          }
-          var selling;
-          await state.fnft.methods
-            .getSellingPrice(i)
-            .call({
+          if (`${state.address}`.toLowerCase() === `${owner}`.toLowerCase()) {
+            const sale = await state.fnft.methods.getForSale(i).call({
               from: state.address,
-            })
-            .then((response) => {
-              selling = response;
-              console.log(selling);
             });
-          array.push({ id: i, sale: onSale, sellingPrice: selling });
+            var renderData = async () => {
+              var selling;
+              await state.fnft.methods
+                .getSellingPrice(i)
+                .call({
+                  from: state.address,
+                })
+                .then((response) => {
+                  selling = response;
+                });
+              const approved = await state.fnft.methods.getApproved(i).call({
+                from: state.address,
+              });
+              var checkApproved = false;
+              if (
+                `${approved}`.toLowerCase() ===
+                `${addresses['festivalNFTAddress']}`.toLowerCase()
+              ) {
+                checkApproved = true;
+              }
+              return (
+                <tr key={i}>
+                  <td>{i}</td>
+                  <td>{selling}</td>
+
+                  <td>
+                    {checkApproved ? (
+                      sale ? (
+                        <button className="uppercase border-light-blue border-2 inline-block text-sm bg-grey px-4 p-2 rounded-full font-semibold hover:bg-indigo-100">
+                          Change Listing
+                        </button>
+                      ) : (
+                        <button className="uppercase border-light-blue border-2 inline-block text-sm bg-grey px-4 p-2 rounded-full font-semibold hover:bg-indigo-100">
+                          List
+                        </button>
+                      )
+                    ) : (
+                      <button
+                        className="uppercase border-light-blue border-2 inline-block text-sm bg-grey px-4 p-2 rounded-full font-semibold hover:bg-indigo-100"
+                        value={i}
+                        onClick={(e) => approveTicket(e.target.value)}
+                      >
+                        Approve
+                      </button>
+                    )}
+                  </td>
+                </tr>
+              );
+            };
+            array.push(await renderData());
+          }
         }
+        setTickets(array);
+      } catch (error) {
+        console.log(error);
       }
-      setTickets(array);
     };
 
     const isOwner = async () => {
@@ -72,11 +107,8 @@ function Profile() {
     }
   }, [owner, isInitialRender, state, tickets]);
 
-  const open = async (id, cSellingPrice) => {
+  const open = async () => {
     setListForm(true);
-    setTicketId(id);
-    setCurrentSellingPrice(cSellingPrice);
-    // await state.fnft.methods.
   };
 
   const close = async () => {
@@ -96,30 +128,20 @@ function Profile() {
       });
   };
 
-  const approveTicketListing = async () => {
-    const approved = await state.ftk.methods.getApproved(ticketId).call({
-      from: state.address,
-    });
-    console.log(approved);
-    // if (allowance > 0) {
-    //   console.log('you have sufficient allowance');
-    // } else {
-    //   await state.ftk.methods
-    //     .approve(
-    //       addresses['festivalNFTAddress'],
-    //       state.web3.utils.toBN(ticketPrice * 5 * 1e18)
-    //     )
-    //     .send({ from: state.address })
-    //     .then(function (result) {
-    //       console.log(result);
-    //     });
-    // }
-    // checkAllowance(true);
-  };
-
   const startPublicSale = async () => {
     await state.fnft.methods
       .startPublicSale()
+      .send({
+        from: state.address,
+      })
+      .on('receipt', function (receipt) {
+        console.log(receipt);
+      });
+  };
+
+  const approveTicket = async (id) => {
+    await state.fnft.methods
+      .approve(addresses['festivalNFTAddress'], id)
       .send({
         from: state.address,
       })
@@ -138,30 +160,6 @@ function Profile() {
       setCurrentSellingPrice(Number(event.target.value));
     }
   };
-
-  const data = useMemo(() => tickets, [tickets]);
-
-  // Define column of the table
-  const columns = useMemo(
-    () => [
-      {
-        Header: 'ID',
-        accessor: 'id',
-      },
-      {
-        Header: 'Sale',
-        accessor: 'sale',
-      },
-      {
-        Header: 'Selling Price',
-        accessor: 'selling_price',
-      },
-    ],
-    []
-  );
-
-  const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow } =
-    useTable({ columns, data });
 
   return (
     <div className="">
@@ -185,22 +183,16 @@ function Profile() {
                 FNFT Details
               </div>
               <div className="p-6">
-                <table
-                  {...getTableProps()}
-                  className="table-auto border-separate border-spacing-4 "
-                >
+                <table className="table-auto border-separate border-spacing-4 ">
                   <thead>
-                    {headerGroups.map((headerGroup) => (
-                      <tr {...headerGroup.getHeaderGroupProps()}>
-                        {headerGroup.headers.map((column) => (
-                          <th {...column.getHeaderProps()}>
-                            {column.render('Header')}
-                          </th>
-                        ))}
-                      </tr>
-                    ))}
+                    <tr>
+                      <th key="id">Ticket ID</th>
+                      <th key="sellingPrice">Selling Price</th>
+                      <th key="sale">Sale</th>
+                    </tr>
                   </thead>
-                  <tbody>
+                  <tbody>{tickets}</tbody>
+                  {/* <tbody>
                     {tickets.map((obj) => {
                       return (
                         <tr key={obj}>
@@ -223,7 +215,7 @@ function Profile() {
                         </tr>
                       );
                     })}
-                  </tbody>
+                  </tbody> */}
                 </table>
                 {listForm ? (
                   <form className="w-full max-w-sm">
