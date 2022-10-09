@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import Navbar from '../components/navbar';
+import Navbar from '../components/Navbar';
 import { useUser } from '../context/user';
 import addresses from '../contracts/src/addresses';
 

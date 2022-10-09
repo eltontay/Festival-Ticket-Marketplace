@@ -2,7 +2,7 @@ import Link from 'next/link';
 import React from 'react';
 // Importing modules
 import { useUser } from '../context/user';
-import Navbar from '../components/navbar';
+import Navbar from '../components/Navbar';
 function App() {
   const { state, connect } = useUser();
 

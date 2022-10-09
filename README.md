@@ -45,10 +45,16 @@ There are 4 main pages listed under the `./pages` directory.
 
 #
 
-## Deployment
+## Localhost Testing
 
 ```bash
+npm run dev
+```
 
+## Docker Deployment
+
+```bash
+docker-compose up --build --force-recreate
 ```
 
 #

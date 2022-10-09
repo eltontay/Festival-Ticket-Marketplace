@@ -1,9 +1,11 @@
-version: '3.9'
+version: '3'
+
 services:
-  festival-ticket-marketplace:
+  web:
     build:
-      context: './'
-    networks:
-      - dev
+      context: .
+      dockerfile: Dockerfile
+    image: festival-ticket-marketplace
+    restart: always
     ports:
-      - '3000:3000'
+      - 3000:3000

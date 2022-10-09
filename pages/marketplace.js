@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useUser } from '../context/user';
-import Navbar from '../components/navbar';
+import Navbar from '../components/Navbar';
 
 function Marketplace() {
   const { state } = useUser();

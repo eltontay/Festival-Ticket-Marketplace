@@ -1,6 +1,6 @@
 import React, { Component, useState, useEffect, useRef } from 'react';
 import { useUser } from '../context/user';
-import Navbar from '../components/navbar';
+import Navbar from '../components/Navbar';
 import addresses from '../contracts/src/addresses';
 
 function BuyTicket() {
