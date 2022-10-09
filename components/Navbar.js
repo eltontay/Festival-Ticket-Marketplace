@@ -72,12 +72,12 @@ export default function Navbar() {
             {state.isConnected ? (
               <div className="flex flex-wrap justify-end space-x-4 items-center">
                 <button
-                  className="flex uppercase p-2 inline-block text-sm bg-white rounded font-semibold hover:bg-indigo-100"
+                  className="uppercase p-2 inline-block text-sm bg-white rounded font-semibold hover:bg-indigo-100"
                   onClick={() => disconnect()}
                 >
                   <p className="text-black">Disconnect Wallet</p>
                 </button>
-                <div className="flex inline-block">
+                <div className=" inline-block">
                   <p>
                     {` ${state.address}`.slice(0, 5)}...
                     {`${state.address}`.slice(-5)}

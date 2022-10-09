@@ -107,7 +107,7 @@ function BuyTicket() {
                     </button>
                   )}
 
-                  <div className="inline-block flex justify-center">
+                  <div className="inline-block justify-center">
                     <input
                       type="number"
                       className="
