@@ -71,3 +71,4 @@ You can view the application at http://localhost:3001
    - withdraw
    - pausing mint
    - burning tokens
+   - Monetisation Option
