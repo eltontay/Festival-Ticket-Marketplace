@@ -27,20 +27,32 @@ There are 4 main pages listed under the `./pages` directory.
   - Marketplace Page that is a secondary Marketplace that faciliates resales of ERC721 Festival Tickets (FNFT)
 - **Profile**
   - Profile Page that showcases the account balances as well as owner functionalities
-   
-#
+  
+## Get Started
+### Prerequisites
+1. Docker
+2. Metamask connected to Goerli
 
-## Localhost Testing
-
+### Steps
+1. Ensure that you have a SettleMint account set up
+2. Ensure that you have a private key set up
+3. Clone the smart contract repository (https://github.com/eltontay/Festival-Smart-Contracts.git)
+4. Deploy the smart contracts by running the following command
 ```bash
-npm run dev
+npm run smartcontract:deploy
 ```
-
-## Docker Deployment
-
+5. Note down the FestivalNFT and FestivalFNFT deployed addresses 
+6. Clone the frontend repository (https://github.com/eltontay/Festival-Ticket-Marketplace.git)
+7. Head over to `/contracts/src/addresses` and replace the respective addresses with the noted down addresses
+8. Import the private key into metamask and ensure you are on the Goerli network.
+9. Create new accounts in metamask for testing purposes
+10. Transfer some FTK from the first account into new created accounts for testing purposes
+11. Set up is completed and you can now test customer/owner functionalities
+12. Deploy the frontend application by running the following command (Make sure docker is running)
 ```bash
-docker-compose up --build --force-recreate
+docker-compose up --build
 ```
+You can view the application at http://localhost:3001
 
 #
 
